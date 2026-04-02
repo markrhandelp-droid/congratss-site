@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Congratulations, Graduate 🎓</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Great+Vibes&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0d1b2a;
+      --midnight: #111827;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-pale: #f5e6b8;
+      --blush: #f2c4c4;
+      --cream: #fdf6ec;
+      --rose: #d4828a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--midnight);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── STARFIELD ── */
+    #stars-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── CONFETTI ── */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      text-align: center;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 40%, rgba(201,168,76,0.10) 0%, transparent 70%),
+                  radial-gradient(ellipse 50% 50% at 80% 80%, rgba(212,130,138,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    /* Decorative arch border */
+    .arch-frame {
+      position: relative;
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 60% 60% 0 0 / 30% 30% 0 0;
+      padding: 70px 60px 60px;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      background: rgba(13,27,42,0.45);
+      backdrop-filter: blur(8px);
+      box-shadow:
+        0 0 60px rgba(201,168,76,0.08),
+        0 0 120px rgba(201,168,76,0.04),
+        inset 0 0 40px rgba(13,27,42,0.6);
+      animation: archIn 1.2s cubic-bezier(.16,1,.3,1) both;
+    }
+
+    @keyframes archIn {
+      from { opacity: 0; transform: translateY(40px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0)    scale(1); }
+    }
+
+    /* Corner flourishes */
+    .arch-frame::before, .arch-frame::after {
+      content: '✦';
+      position: absolute;
+      color: var(--gold);
+      font-size: 1.1rem;
+      opacity: 0.7;
+    }
+    .arch-frame::before { top: -14px; left: 50%; transform: translateX(-50%); }
+    .arch-frame::after  { display: none; }
+
+    .corner {
+      position: absolute;
+      width: 28px; height: 28px;
+      border-color: rgba(201,168,76,0.5);
+      border-style: solid;
+    }
+    .corner-tl { top: 16px; left: 16px; border-width: 1px 0 0 1px; }
+    .corner-tr { top: 16px; right: 16px; border-width: 1px 1px 0 0; }
+    .corner-bl { bottom: 20px; left: 16px; border-width: 0 0 1px 1px; }
+    .corner-br { bottom: 20px; right: 16px; border-width: 0 1px 1px 0; }
+
+    /* Divider line */
+    .gold-line {
+      width: 80px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 16px auto;
+    }
+
+    /* Eyebrow */
+    .eyebrow {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0;
+      animation: fadeUp 0.9s 0.4s cubic-bezier(.16,1,.3,1) forwards;
+    }
+
+    /* Cap emoji floating */
+    .cap-emoji {
+      font-size: 3rem;
+      display: block;
+      margin: 12px 0;
+      opacity: 0;
+      animation: capDrop 1s 0.6s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    @keyframes capDrop {
+      from { opacity: 0; transform: translateY(-30px) rotate(-15deg); }
+      to   { opacity: 1; transform: translateY(0)     rotate(0deg); }
+    }
+
+    /* Big title */
+    .title-main {
+      font-family: 'Great Vibes', cursive;
+      font-size: clamp(2.8rem, 8vw, 5.2rem);
+      color: var(--gold-light);
+      line-height: 1.1;
+      text-shadow: 0 0 40px rgba(201,168,76,0.4), 0 2px 4px rgba(0,0,0,0.4);
+      opacity: 0;
+      animation: fadeUp 1s 0.8s cubic-bezier(.16,1,.3,1) forwards;
+    }
+
+    .title-sub {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      font-weight: 400;
+      font-style: italic;
+      color: var(--cream);
+      margin-top: 4px;
+      opacity: 0;
+      animation: fadeUp 1s 1s cubic-bezier(.16,1,.3,1) forwards;
+    }
+
+    /* Name plate */
+    .name-plate {
+      margin: 20px 0 8px;
+      opacity: 0;
+      animation: fadeUp 1s 1.2s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .name-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+    .name-value {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.6rem, 5vw, 2.6rem);
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+    }
+
+    /* Message */
+    .message {
+      font-size: clamp(1rem, 2.5vw, 1.18rem);
+      line-height: 1.85;
+      color: rgba(253,246,236,0.85);
+      font-weight: 300;
+      font-style: italic;
+      max-width: 480px;
+      margin: 0 auto;
+      opacity: 0;
+      animation: fadeUp 1s 1.4s cubic-bezier(.16,1,.3,1) forwards;
+    }
+
+    /* Signature */
+    .signature-wrap {
+      margin-top: 28px;
+      opacity: 0;
+      animation: fadeUp 1s 1.6s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .signature-line {
+      font-family: 'Great Vibes', cursive;
+      font-size: 2.2rem;
+      color: var(--rose);
+      text-shadow: 0 0 20px rgba(212,130,138,0.4);
+    }
+    .signature-note {
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(253,246,236,0.4);
+      margin-top: 2px;
+    }
+
+    /* ── SCROLL SECTION ── */
+    .cards-section {
+      position: relative;
+      z-index: 2;
+      padding: 60px 24px 100px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      text-align: center;
+      font-size: 0.8rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 40px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: rgba(13,27,42,0.55);
+      border: 1px solid rgba(201,168,76,0.18);
+      border-radius: 4px;
+      padding: 32px 24px;
+      text-align: center;
+      backdrop-filter: blur(6px);
+      transition: transform 0.4s cubic-bezier(.16,1,.3,1), box-shadow 0.4s;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .card.visible {
+      animation: fadeUp 0.8s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px rgba(201,168,76,0.1);
+    }
+    .card-icon { font-size: 2rem; margin-bottom: 12px; }
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 8px;
+    }
+    .card-text {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: rgba(253,246,236,0.72);
+      font-style: italic;
+    }
+
+    /* ── BURST BUTTON ── */
+    .burst-wrap {
+      text-align: center;
+      margin-top: 60px;
+      position: relative;
+      z-index: 2;
+      padding-bottom: 80px;
+    }
+    .burst-btn {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 14px 44px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .burst-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gold);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.35s cubic-bezier(.16,1,.3,1);
+      z-index: -1;
+    }
+    .burst-btn:hover::after { transform: scaleX(1); }
+    .burst-btn:hover { color: var(--midnight); }
+
+    /* ── FLOATING PETALS ── */
+    .petal {
+      position: fixed;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 5;
+      animation: petalFall linear infinite;
+      opacity: 0;
+    }
+    @keyframes petalFall {
+      0%   { opacity: 0;   transform: translateY(-20px) rotate(0deg); }
+      10%  { opacity: 0.8; }
+      90%  { opacity: 0.6; }
+      100% { opacity: 0;   transform: translateY(110vh) rotate(360deg); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: rgba(13,27,42,0.9);
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      padding: 14px 32px;
+      border-radius: 2px;
+      backdrop-filter: blur(10px);
+      transition: transform 0.5s cubic-bezier(.16,1,.3,1), opacity 0.5s;
+      opacity: 0;
+      z-index: 100;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* ── MOBILE NAME MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--navy);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 6px;
+      padding: 32px 28px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      animation: archIn 0.4s cubic-bezier(.16,1,.3,1) both;
+    }
+    .modal-box p {
+      font-size: 0.78rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+    }
+    .modal-input {
+      width: 100%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(201,168,76,0.35);
+      border-radius: 3px;
+      color: var(--cream);
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+      text-align: center;
+      padding: 12px 16px;
+      outline: none;
+      margin-bottom: 16px;
+      -webkit-appearance: none;
+    }
+    .modal-input:focus { border-color: var(--gold); }
+    .modal-btn {
+      width: 100%;
+      background: var(--gold);
+      border: none;
+      border-radius: 3px;
+      color: var(--midnight);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 13px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .modal-btn:active { background: var(--gold-light); }
+
+    /* ── RESPONSIVE ── */
+
+    /* Tablets */
+    @media (max-width: 768px) {
+      .hero { padding: 40px 16px; min-height: 100svh; }
+      .arch-frame {
+        padding: 52px 32px 44px;
+        border-radius: 50% 50% 0 0 / 20% 20% 0 0;
+      }
+      .cards-section { padding: 48px 16px 80px; }
+      .cards-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+      .card { padding: 26px 18px; }
+      .burst-wrap { padding-bottom: 60px; }
+    }
+
+    /* Phones */
+    @media (max-width: 480px) {
+      .hero { padding: 24px 12px; justify-content: flex-start; padding-top: 40px; }
+
+      .arch-frame {
+        padding: 36px 20px 32px;
+        border-radius: 40% 40% 0 0 / 14% 14% 0 0;
+        max-width: 100%;
+      }
+
+      /* Tighter corners on small screens */
+      .corner { width: 18px; height: 18px; }
+      .corner-tl { top: 10px; left: 10px; }
+      .corner-tr { top: 10px; right: 10px; }
+      .corner-bl { bottom: 12px; left: 10px; }
+      .corner-br { bottom: 12px; right: 10px; }
+
+      .eyebrow { font-size: 0.7rem; letter-spacing: 0.22em; }
+      .cap-emoji { font-size: 2.4rem; margin: 8px 0; }
+      .gold-line { margin: 10px auto; }
+
+      .title-main { font-size: clamp(2.4rem, 11vw, 3.8rem); }
+      .title-sub  { font-size: clamp(1.1rem, 5vw, 1.5rem); }
+
+      .name-plate { margin: 14px 0 6px; }
+      .name-label { font-size: 0.68rem; letter-spacing: 0.22em; }
+      .name-value { font-size: clamp(1.3rem, 6.5vw, 2rem); }
+
+      .message {
+        font-size: clamp(0.95rem, 3.8vw, 1.1rem);
+        line-height: 1.75;
+        max-width: 100%;
+      }
+
+      .signature-line { font-size: 1.8rem; }
+      .signature-note { font-size: 0.68rem; }
+
+      /* Cards: single column */
+      .cards-section { padding: 36px 12px 60px; }
+      .section-label { font-size: 0.7rem; letter-spacing: 0.25em; margin-bottom: 28px; }
+      .cards-grid { grid-template-columns: 1fr; gap: 12px; }
+      .card { padding: 24px 20px; }
+      .card-icon { font-size: 1.7rem; margin-bottom: 8px; }
+      .card-title { font-size: 1rem; }
+      .card-text  { font-size: 0.92rem; }
+
+      /* Card tap highlight instead of hover */
+      .card:active {
+        transform: scale(0.98);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3), 0 0 12px rgba(201,168,76,0.12);
+      }
+
+      /* Confetti button */
+      .burst-wrap { padding-bottom: 50px; margin-top: 40px; }
+      .burst-btn {
+        padding: 16px 32px;
+        font-size: 0.95rem;
+        width: 80%;
+        max-width: 300px;
+        display: block;
+        margin: 0 auto;
+        /* Larger tap target */
+        min-height: 52px;
+      }
+
+      /* Toast full-width on phone */
+      .toast {
+        left: 12px;
+        right: 12px;
+        bottom: 20px;
+        transform: translateY(80px);
+        width: auto;
+        text-align: center;
+        font-size: 0.92rem;
+        padding: 14px 20px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .toast.show { transform: translateY(0); }
+    }
+
+    /* Very small phones */
+    @media (max-width: 360px) {
+      .arch-frame { padding: 28px 14px 26px; }
+      .title-main { font-size: 2.2rem; }
+      .name-value { font-size: 1.2rem; }
+      .message    { font-size: 0.9rem; }
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="stars-canvas"></canvas>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="arch-frame">
+      <div class="corner corner-tl"></div>
+      <div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div>
+      <div class="corner corner-br"></div>
+
+      <p class="eyebrow">A special message for you</p>
+      <span class="cap-emoji">🎓</span>
+
+      <div class="gold-line"></div>
+
+      <h1 class="title-main">Congratulations</h1>
+      <p class="title-sub">You Did It 🩶</p>
+
+      <div class="gold-line" style="margin-top:16px;"></div>
+
+      <div class="name-plate">
+        <p class="name-label">To the wonderful</p>
+        <p class="name-value" id="grad-name">Febe Madrona Dequiña</p>
+      </div>
+
+      <div class="gold-line"></div>
+
+      <p class="message">
+        Watching you achieve this milestone 
+        fills my heart with so much admiration and pride. 
+        This is just the beginning of something beautiful.
+      </p>
+
+      <div class="signature-wrap">
+        <div class="gold-line"></div>
+        <p class="signature-line">With all my heart 💛</p>
+        <p class="signature-note">RHANDEL</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cards -->
+  <section class="cards-section">
+    <p class="section-label">✦ &nbsp; A few things I admire about you &nbsp; ✦</p>
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-icon">✨</div>
+        <div class="card-title">Your Brilliance</div>
+        <p class="card-text">Your mind is one of the most beautiful things about you. The way you make everything seem so easy, is something i truly admire</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌸</div>
+        <div class="card-title">Your Kindness</div>
+        <p class="card-text">I really admire how kind you are to everyone. The way you treated me, even when I was always shy around you, meant more to me than you probably realize. </p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌟</div>
+        <div class="card-title">Your Future</div>
+        <p class="card-text">You’ve faced everything with strength and calm. I’m sure you’re going to do amazing things in the future.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Confetti trigger -->
+  <div class="burst-wrap">
+    <button class="burst-btn" onclick="triggerConfetti()">
+      🎉 &nbsp; Celebrate with confetti &nbsp; 🎉
+    </button>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">🥂 Wishing you the brightest future!</div>
+
+  <script>
+    // ── Personalise name ──────────────────────────────────────────────
+    const savedName = localStorage.getItem('gradName');
+    if (savedName) document.getElementById('grad-name').textContent = savedName;
+
+    const nameEl = document.getElementById('grad-name');
+    nameEl.style.cursor = 'pointer';
+    nameEl.title = 'Click to personalise';
+    nameEl.addEventListener('click', () => {
+      const n = prompt('Enter their name:', nameEl.textContent.replace(/^— | —$/g, '').trim());
+      if (n && n.trim()) {
+        nameEl.textContent = n.trim();
+        localStorage.setItem('gradName', n.trim());
+      }
+    });
+
+    // ── Starfield ─────────────────────────────────────────────────────
+    (() => {
+      const c = document.getElementById('stars-canvas');
+      const ctx = c.getContext('2d');
+      let stars = [];
+      function resize() {
+        c.width  = window.innerWidth;
+        c.height = window.innerHeight;
+        stars = Array.from({length: 180}, () => ({
+          x: Math.random() * c.width,
+          y: Math.random() * c.height,
+          r: Math.random() * 1.2 + 0.2,
+          a: Math.random(),
+          s: Math.random() * 0.006 + 0.002
+        }));
+      }
+      resize();
+      window.addEventListener('resize', resize);
+      function draw() {
+        ctx.clearRect(0, 0, c.width, c.height);
+        stars.forEach(s => {
+          s.a += s.s;
+          const alpha = (Math.sin(s.a) + 1) / 2 * 0.7 + 0.1;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(232,201,122,${alpha})`;
+          ctx.fill();
+        });
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
+    // ── Floating petals ───────────────────────────────────────────────
+    const petalSymbols = ['🌸','✨','💛','🌟','⭐','💫','🎀','🌼'];
+    function spawnPetal() {
+      const el = document.createElement('div');
+      el.className = 'petal';
+      el.textContent = petalSymbols[Math.floor(Math.random() * petalSymbols.length)];
+      el.style.left  = Math.random() * 100 + 'vw';
+      el.style.fontSize = (0.8 + Math.random() * 0.8) + 'rem';
+      const dur = 7 + Math.random() * 8;
+      el.style.animationDuration  = dur + 's';
+      el.style.animationDelay     = Math.random() * 5 + 's';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), (dur + 5) * 1000);
+    }
+    setInterval(spawnPetal, 800);
+
+    // ── Scroll reveal cards ───────────────────────────────────────────
+    const cards = document.querySelectorAll('.card');
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 150);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    cards.forEach(c => obs.observe(c));
+
+    // ── Confetti ──────────────────────────────────────────────────────
+    const CC = document.getElementById('confetti-canvas');
+    const cx = CC.getContext('2d');
+    CC.width  = window.innerWidth;
+    CC.height = window.innerHeight;
+    window.addEventListener('resize', () => {
+      CC.width  = window.innerWidth;
+      CC.height = window.innerHeight;
+    });
+
+    let pieces = [];
+    const COLORS = ['#c9a84c','#e8c97a','#f2c4c4','#fdf6ec','#d4828a','#ffffff','#f5e6b8'];
+
+    function triggerConfetti() {
+      for (let i = 0; i < 200; i++) {
+        pieces.push({
+          x: Math.random() * CC.width,
+          y: Math.random() * -CC.height * 0.5 - 10,
+          w: 6 + Math.random() * 8,
+          h: 3 + Math.random() * 5,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          vx: (Math.random() - 0.5) * 4,
+          vy: 2 + Math.random() * 4,
+          rot: Math.random() * 360,
+          rotV: (Math.random() - 0.5) * 8,
+          alpha: 1,
+          life: 1
+        });
+      }
+      confettiLoop();
+      showToast();
+    }
+
+    let looping = false;
+    function confettiLoop() {
+      if (looping) return;
+      looping = true;
+      function tick() {
+        cx.clearRect(0, 0, CC.width, CC.height);
+        pieces = pieces.filter(p => p.alpha > 0.01);
+        pieces.forEach(p => {
+          p.x   += p.vx;
+          p.y   += p.vy;
+          p.rot += p.rotV;
+          p.vy  += 0.08;
+          if (p.y > CC.height * 0.8) p.alpha -= 0.02;
+          cx.save();
+          cx.globalAlpha = p.alpha;
+          cx.translate(p.x, p.y);
+          cx.rotate(p.rot * Math.PI / 180);
+          cx.fillStyle = p.color;
+          cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          cx.restore();
+        });
+        if (pieces.length) requestAnimationFrame(tick);
+        else { looping = false; cx.clearRect(0, 0, CC.width, CC.height); }
+      }
+      tick();
+    }
+
+    function showToast() {
+      const t = document.getElementById('toast');
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+  </script>
+</body>
+</html>
